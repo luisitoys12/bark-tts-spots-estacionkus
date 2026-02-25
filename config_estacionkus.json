@@ -1,0 +1,24 @@
+{
+  "estacionkus_config": {
+    "voces_preferidas": {
+      "noticiero": "v2/es_speaker_1",
+      "promocional": "v2/en_speaker_6",
+      "institucional": "v2/en_speaker_9"
+    },
+    "duracion_maxima": 13,
+    "sample_rate_export": 48000,
+    "formato_export": "WAV",
+    "pipeline_post": [
+      "noise_reduction",
+      "normalize",
+      "compress",
+      "eq",
+      "limiter"
+    ],
+    "niveles": {
+      "normalize_db": -3.0,
+      "limiter_db": -0.5,
+      "lufs_target": -14
+    }
+  }
+}
