@@ -1,0 +1,19 @@
+{
+  "spots": [
+    {
+      "nombre": "promo_matutino",
+      "texto": "¡Buenos días! Sintoniza EstacionKusTV cada mañana para noticias frescas.",
+      "voz": "v2/es_speaker_1"
+    },
+    {
+      "nombre": "jingle_estacionkus",
+      "texto": "♪ EstacionKus, tu voz Gen Z ♪",
+      "voz": null
+    },
+    {
+      "nombre": "promo_noticiero",
+      "texto": "[WOMAN] El noticiero que marca tendencia. EstacionKusTV, contenido pensado para ti.",
+      "voz": "v2/en_speaker_9"
+    }
+  ]
+}
