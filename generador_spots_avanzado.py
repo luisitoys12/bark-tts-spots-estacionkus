@@ -1,141 +1,141 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-'''
-GENERADOR AVANZADO DE SPOTS PUBLICITARIOS
-EstacionKusTV/EstacionKusMedia - Powered by Bark AI
-'''
+"""
+GENERADOR DE SPOTS AVANZADO
+EstacionKusTV/EstacionKusMedia
+"""
 
 import os
-from bark import SAMPLE_RATE, generate_audio, preload_models
-from scipy.io.wavfile import write as write_wav
-import numpy as np
+import sys
+from datetime import datetime
+from pathlib import Path
+
+try:
+    from bark import SAMPLE_RATE, generate_audio, preload_models
+    from scipy.io.wavfile import write as write_wav
+    import numpy as np
+except ImportError:
+    print("ERROR: Dependencias no instaladas")
+    print("Ejecuta primero el instalador")
+    sys.exit(1)
 
 class GeneradorSpots:
     def __init__(self):
-        print("="*60)
-        print("GENERADOR DE SPOTS PUBLICITARIOS - BARK AI")
-        print("EstacionKusTV/EstacionKusMedia")
-        print("="*60)
+        self.audio_dir = Path.home() / "BarkStudioPro" / "Audio"
+        self.audio_dir.mkdir(parents=True, exist_ok=True)
         
-        # Optimización según hardware
-        usar_gpu = input("\n¿Tienes GPU NVIDIA? (s/n): ").lower() == 's'
-        if not usar_gpu:
-            os.environ["SUNO_OFFLOAD_CPU"] = "True"
-            os.environ["SUNO_USE_SMALL_MODELS"] = "True"
-            print("→ Modo CPU activado (más lento pero funcional)")
-        else:
-            print("→ Modo GPU activado (más rápido)")
+        # Configurar para CPU
+        os.environ["SUNO_USE_SMALL_MODELS"] = "True"
+        os.environ["SUNO_OFFLOAD_CPU"] = "True"
         
-        print("\n→ Cargando modelos de IA...")
+    def cargar_modelos(self):
+        print("Cargando modelos de Bark AI...")
+        print("(Primera vez puede tardar varios minutos)\n")
         preload_models()
-        print("✓ Modelos listos\n")
+        print("Modelos cargados correctamente\n")
+    
+    def generar_spot(self, texto, voz=None, nombre=None):
+        print(f"Generando audio...")
+        print(f"Texto: {texto[:50]}..." if len(texto) > 50 else f"Texto: {texto}")
+        
+        if voz:
+            print(f"Voz: {voz}")
+            audio = generate_audio(texto, history_prompt=voz)
+        else:
+            print("Voz: Aleatoria")
+            audio = generate_audio(texto)
+        
+        # Normalizar audio
+        audio = audio / np.max(np.abs(audio)) * 0.95
+        
+        # Generar nombre de archivo
+        if not nombre:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            nombre = f"spot_{timestamp}"
+        
+        # Guardar
+        filepath = self.audio_dir / f"{nombre}.wav"
+        write_wav(str(filepath), SAMPLE_RATE, audio)
+        
+        print(f"\nAudio generado: {filepath}")
+        return filepath
     
     def mostrar_voces(self):
-        '''Catálogo de voces disponibles'''
-        voces = {
-            # Voces en inglés
-            "en_1": {"preset": "v2/en_speaker_0", "desc": "Masculino profesional"},
-            "en_2": {"preset": "v2/en_speaker_1", "desc": "Masculino casual"},
-            "en_3": {"preset": "v2/en_speaker_6", "desc": "Masculino energético"},
-            "en_4": {"preset": "v2/en_speaker_9", "desc": "Femenino profesional"},
-            # Voces en español
-            "es_1": {"preset": "v2/es_speaker_0", "desc": "Español neutro"},
-            "es_2": {"preset": "v2/es_speaker_1", "desc": "Español narrador"},
-            # Otras lenguas
-            "de_1": {"preset": "v2/de_speaker_0", "desc": "Alemán"},
-            "fr_1": {"preset": "v2/fr_speaker_1", "desc": "Francés"},
-            "random": {"preset": None, "desc": "Voz aleatoria (experimental)"}
-        }
-        
-        print("\n→ VOCES DISPONIBLES:")
-        for key, info in voces.items():
-            print(f"  {key}: {info['desc']}")
-        
-        return voces
+        print("\nVOCES DISPONIBLES PARA ESPAÑOL:")
+        print("=" * 50)
+        print("v2/es_speaker_0 - Masculino Neutro")
+        print("v2/es_speaker_1 - Masculino Narrador")
+        print("v2/es_speaker_2 - Femenino Suave")
+        print("v2/es_speaker_3 - Masculino Joven")
+        print("v2/es_speaker_4 - Femenino Profesional")
+        print("v2/es_speaker_5 - Masculino Energético")
+        print("v2/es_speaker_6 - Femenino Amigable")
+        print("v2/es_speaker_7 - Masculino Serio")
+        print("v2/es_speaker_8 - Femenino Juvenil")
+        print("v2/es_speaker_9 - Masculino Casual")
+        print("\n(Deja vacío para voz aleatoria)")
+        print("=" * 50)
+
+def main():
+    print("=" * 60)
+    print("  GENERADOR DE SPOTS - BARK STUDIO PRO")
+    print("  EstacionKusTV/EstacionKusMedia")
+    print("=" * 60)
+    print()
     
-    def generar_spot(self):
-        '''Generador interactivo de spots'''
+    generador = GeneradorSpots()
+    
+    # Cargar modelos
+    generador.cargar_modelos()
+    
+    while True:
+        print("\n" + "=" * 60)
+        print("NUEVO SPOT")
+        print("=" * 60)
         
-        # Configuración básica
-        nombre = input("\nNombre del proyecto: ")
-        
-        # Selección de voz
-        voces = self.mostrar_voces()
-        voz_id = input("\nSelecciona voz (ej: en_3, es_1): ")
-        preset = voces.get(voz_id, {}).get("preset")
-        
-        # Instrucciones de formato
-        print("\n" + "="*60)
-        print("TIPS PARA MEJOR CALIDAD:")
-        print("="*60)
-        print("• [laughs] - risas")
-        print("• [sighs] - suspiros")
-        print("• [music] - música de fondo")
-        print("• [gasps] - jadeos/sorpresa")
-        print("• [clears throat] - aclarar garganta")
-        print("• MAYÚSCULAS - énfasis en palabra")
-        print("• ... o — - pausas/hesitación")
-        print("• ♪ texto ♪ - cantar/jingle")
-        print("• [MAN] o [WOMAN] - sesgar género voz")
-        print("="*60)
-        
-        # Entrada de texto
-        print("\nIngresa el texto del spot (máximo 13 segundos de habla):")
-        print("Presiona Enter dos veces cuando termines\n")
-        
-        lines = []
+        # Pedir guión
+        print("\nEscribe tu guión (Enter 2 veces para finalizar):")
+        lineas = []
         while True:
-            line = input()
-            if line == "":
-                if lines:
-                    break
-            else:
-                lines.append(line)
+            linea = input()
+            if linea == "":
+                break
+            lineas.append(linea)
         
-        texto_spot = " ".join(lines)
+        texto = "\n".join(lineas)
         
-        # Generar audio
-        print("\n→ Generando spot publicitario...")
-        print("   (Esto puede tardar 30-120 segundos)\n")
+        if not texto.strip():
+            print("No se ingresó texto. Saliendo...")
+            break
         
-        if preset:
-            audio = generate_audio(texto_spot, history_prompt=preset)
-        else:
-            audio = generate_audio(texto_spot)
+        # Mostrar voces
+        generador.mostrar_voces()
         
-        # Guardar archivo
-        output_file = f"{nombre}_spot.wav"
-        write_wav(output_file, SAMPLE_RATE, audio)
+        # Pedir voz
+        voz_input = input("\nVoz (Enter para aleatoria): ").strip()
+        voz = voz_input if voz_input else None
         
-        duracion = len(audio) / SAMPLE_RATE
+        # Pedir nombre
+        nombre_input = input("Nombre del archivo (Enter para automático): ").strip()
+        nombre = nombre_input if nombre_input else None
         
-        print("\n" + "="*60)
-        print("✓ SPOT GENERADO EXITOSAMENTE")
-        print("="*60)
-        print(f"Archivo: {output_file}")
-        print(f"Duración: {duracion:.2f} segundos")
-        print(f"Sample Rate: {SAMPLE_RATE} Hz")
-        print(f"Tamaño: {len(audio)} samples")
+        # Generar
+        print("\n" + "-" * 60)
+        try:
+            filepath = generador.generar_spot(texto, voz, nombre)
+            print("-" * 60)
+            print("\n✓ SPOT GENERADO EXITOSAMENTE")
+            print(f"\nArchivo: {filepath}")
+        except Exception as e:
+            print(f"\nERROR: {e}")
         
-        # Recomendaciones post-producción
-        print("\n→ SIGUIENTE PASO: POST-PRODUCCIÓN")
-        print("   Abre el archivo en Audacity o Adobe Audition")
-        print("\n   Pipeline recomendado:")
-        print("   1. Noise Reduction (Reducción de ruido)")
-        print("   2. Normalize a -3.0 dB (Normalización)")
-        print("   3. Compressor 3:1 ratio (Compresión)")
-        print("   4. EQ: Boost 2-5 kHz, Cut <80 Hz")
-        print("   5. Limiter a -0.5 dB (Limitador)")
-        print("="*60)
-        
-        return output_file
+        # Preguntar si continuar
+        continuar = input("\n¿Generar otro spot? (s/n): ").strip().lower()
+        if continuar != 's':
+            break
+    
+    print("\n¡Gracias por usar Bark Studio Pro!")
+    print("EstacionKusTV/EstacionKusMedia\n")
 
 if __name__ == "__main__":
-    generador = GeneradorSpots()
-    generador.generar_spot()
-    
-    # Opción de generar más
-    while input("\n¿Generar otro spot? (s/n): ").lower() == 's':
-        generador.generar_spot()
-    
-    print("\n¡Gracias por usar Bark AI!")
+    main()
